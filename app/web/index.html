@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><title>学生成绩查询系统（复现版）</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; max-width: 880px; margin: 24px auto; }
+  .card { border: 1px solid #d9dee5; border-radius: 8px; padding: 14px; margin: 12px 0; }
+  input, button { padding: 8px 12px; font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+  th, td { border: 1px solid #e5e7eb; padding: 6px 10px; text-align: left; }
+  pre { background: #f6f8fa; padding: 10px; border-radius: 6px; white-space: pre-wrap; }
+</style></head>
+<body>
+<h2>学生成绩查询系统（复现版）</h2>
+<div class="card">
+  <h3>按学号查询</h3>
+  <input id="sid" placeholder="学号，如 2023100101" size="20"><button onclick="byStudent()">查询</button>
+  <div id="student"></div>
+</div>
+<div class="card">
+  <h3>按课程查询</h3>
+  <input id="cid" placeholder="课程号，如 CS101" size="14"><button onclick="byCourse()">查询</button>
+  <div id="course"></div>
+</div>
+<div class="card">
+  <h3>统计看板</h3>
+  <button onclick="loadStats()">刷新</button><pre id="stats"></pre>
+</div>
+<script>
+async function byStudent() {
+  const r = await fetch('/students/' + sid.value);
+  student.innerHTML = r.ok ? renderStudent(await r.json()) : '未找到该学号';
+}
+async function byCourse() {
+  const r = await fetch('/courses/' + cid.value);
+  course.innerHTML = r.ok ? renderCourse(await r.json()) : '未找到该课程';
+}
+async function loadStats() {
+  stats.textContent = JSON.stringify(await (await fetch('/stats')).json(), null, 2);
+}
+function renderStudent(d) {
+  const rows = d.records.map(x => '<tr><td>' + x.course + '</td><td>' + x.term + '</td><td>' + x.score + '</td></tr>').join('');
+  return '<p>' + d.student.name + '（' + d.student.class_name + '）平均分 <b>' + d.average + '</b>，共 ' + d.count + ' 门</p>'
+    + '<table><tr><th>课程</th><th>学期</th><th>成绩</th></tr>' + rows + '</table>';
+}
+function renderCourse(d) {
+  return '<p>' + d.course.name + '（' + d.course.credit + ' 学分）平均 <b>' + d.average + '</b>，及格率 ' + (d.pass_rate * 100).toFixed(1) + '%</p>'
+    + '<pre>' + JSON.stringify(d.distribution, null, 2) + '</pre>';
+}
+loadStats();
+</script></body></html>

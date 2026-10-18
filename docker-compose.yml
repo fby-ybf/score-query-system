@@ -1,0 +1,12 @@
+services:
+  score:
+    build: .
+    container_name: score-query-system
+    ports:
+      - "8002:8002"
+    volumes:
+      - score-data:/srv/data
+    restart: unless-stopped
+
+volumes:
+  score-data:
